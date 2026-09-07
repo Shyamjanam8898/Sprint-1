@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="mb-4" style="background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 20px; border-radius: 12px; max-width:700px; margin:auto;">
+        <h3 style="color: white;"><i class="bi bi-bell"></i> Send Notification</h3>
+        <p style="color: rgba(255,255,255,0.9);">Send messages to students or specific classes</p>
+    </div>
+    <div class="main-content" style="max-width:700px; margin:auto;">
+        {% if success %}
+            <div class="alert alert-success">Message sent successfully!</div>
+        {% endif %}
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+        <form id="contactForm" action="/Notification" method="POST" enctype="multipart/form-data">
+            <div class="form-floating mb-3">
+                <textarea class="form-control" name="Message" placeholder="Enter your message here..." style="height: 12rem" required></textarea>
+                <label for="message">Message</label>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Target Class</label>
+                <select name="target" class="form-select" style="background: #e6eefa;">
+                    <option value="">(choose a class)</option>
+                    {% for c in classes %}
+                        <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Or select <strong>Show to all classes</strong> below.</div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" value="1" id="all_classes" name="all_classes">
+                <label class="form-check-label" for="all_classes">Show to all classes</label>
+            </div>
+
+            <div class="mb-3">
+                <label for="attachment" class="form-label">Attachment (optional)</label>
+                <input class="form-control" type="file" id="attachment" name="attachment">
+                <div class="form-text">Allowed types: images, pdf, docs, spreadsheets, zip, txt.</div>
+            </div>
+
+            <div class="d-grid">
+                <button class="btn btn-primary text-uppercase" id="submitButton" type="submit">Send</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

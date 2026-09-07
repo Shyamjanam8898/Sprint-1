@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid" style="max-width:1200px; margin:auto; padding:20px;">
+
+    <div class="mb-4" style="background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 20px; border-radius: 12px;">
+        <h2 class="mb-1" style="color: white;"><i class="bi bi-bar-chart"></i> Performance Analytics</h2>
+        <p style="color: rgba(255,255,255,0.9);">Overview of all classes and their academic performance</p>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Classes</h6>
+                    <h3 class="mb-0">{{ class_stats|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Students</h6>
+                    <h3 class="mb-0">
+                        {% set total = namespace(count=0) %}
+                        {% for stat in class_stats %}
+                            {% set total.count = total.count + stat.student_count %}
+                        {% endfor %}
+                        {{ total.count }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Exams</h6>
+                    <h3 class="mb-0">
+                        {% set total_exams = namespace(count=0) %}
+                        {% for stat in class_stats %}
+                            {% set total_exams.count = total_exams.count + stat.exam_count %}
+                        {% endfor %}
+                        {{ total_exams.count }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Overall Avg</h6>
+                    <h3 class="mb-0">
+                        {% set total_marks = namespace(sum=0, count=0) %}
+                        {% for stat in class_stats %}
+                            {% if stat.avg_marks > 0 %}
+                                {% set total_marks.sum = total_marks.sum + stat.avg_marks %}
+                                {% set total_marks.count = total_marks.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if total_marks.count > 0 %}
+                            {{ (total_marks.sum / total_marks.count)|round(2) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Performance Table -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-page">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> Class Performance Overview</h5>
+                </div>
+                <div class="card-body">
+                    {% if class_stats|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bi bi-layers"></i> Class/Standard</th>
+                                        <th><i class="bi bi-people"></i> Students</th>
+                                        <th><i class="bi bi-book"></i> Exams Conducted</th>
+                                        <th><i class="bi bi-percent"></i> Class Average</th>
+                                        <th><i class="bi bi-arrow-right"></i> Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stat in class_stats %}
+                                        <tr>
+                                            <td><strong>{{ stat.standard }}</strong></td>
+                                            <td>{{ stat.student_count }}</td>
+                                            <td>{{ stat.exam_count }}</td>
+                                            <td>
+                                                {% if stat.avg_marks > 0 %}
+                                                    <span class="badge" style="background-color: {% if stat.avg_marks >= 80 %}#28a745{% elif stat.avg_marks >= 60 %}#ffc107{% else %}#dc3545{% endif %};">
+                                                        {{ stat.avg_marks }}%
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">No data</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('admin_class_performance', Standard=stat.standard) }}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-eye"></i> View Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No class data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

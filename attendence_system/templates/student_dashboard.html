@@ -1,0 +1,224 @@
+{% extends "layout_student.html" %}
+
+{% block body %}
+<!-- Student Welcome Section -->
+  <!-- Attendance Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-body text-center">
+          <h5 class="card-title mb-2"><i class="bi bi-calendar2-check"></i> Total Classes</h5>
+          <h2 class="mb-0">{{ total_classes }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #06d6a0 0%, #118ab2 100%); color: white;">
+        <div class="card-body text-center">
+          <h5 class="card-title mb-2"><i class="bi bi-check-circle-fill"></i> Present</h5>
+          <h2 class="mb-0">{{ present_count }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #ef476f 0%, #ffa94d 100%); color: white;">
+        <div class="card-body text-center">
+          <h5 class="card-title mb-2"><i class="bi bi-x-circle-fill"></i> Absent</h5>
+          <h2 class="mb-0">{{ absent_count }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #ffd60a 0%, #ffc300 100%); color: #333;">
+        <div class="card-body text-center">
+          <h5 class="card-title mb-2"><i class="bi bi-percent"></i> Attendance</h5>
+          <h2 class="mb-0">{{ attendance_percentage }}%</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recent Attendance -->
+    <div class="col-md-6 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); color: white;">
+          <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Attendance</h5>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+          {% if recent_attendance %}
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Date</th>
+                  <th>Subject</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for att in recent_attendance %}
+                <tr>
+                  <td><small>{{ att.Date }}</small></td>
+                  <td><small>{{ att.Subject[:20] }}</small></td>
+                  <td>
+                    {% if att.Status and att.Status.lower() in ('present', 'p', 'yes') %}
+                      <span class="badge bg-success"><i class="bi bi-check"></i> Present</span>
+                    {% elif att.Status and att.Status.lower() in ('absent', 'a', 'no') %}
+                      <span class="badge bg-danger"><i class="bi bi-x"></i> Absent</span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ att.Status or 'N/A' }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p class="text-muted text-center py-4">No attendance records yet.</p>
+          {% endif %}
+        </div>
+        <div class="card-footer text-end bg-light">
+          <a href="/student_attendence/{{ student.Student_id }}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right"></i> View Full Attendance</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Schedule -->
+    <div class="col-md-6 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(90deg, #06d6a0 0%, #118ab2 100%); color: white;">
+          <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Today's Schedule</h5>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+          {% if today_schedules and today_schedules|length > 0 %}
+            <div class="timeline" style="position: relative; padding-left: 20px;">
+              {% for schedule in today_schedules %}
+              <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                <div style="position: absolute; left: -10px; top: 0; width: 16px; height: 16px; background: #667eea; border-radius: 50%; border: 3px solid white;"></div>
+                <h6 class="mb-1" style="color: #667eea;"><strong>{{ schedule.Subject }}</strong></h6>
+                <small class="text-muted d-block">📅 {{ schedule.Date }}</small>
+                <small class="text-muted d-block">🕐 {{ schedule.Start_time }} - {{ schedule.End_time }}</small>
+                <small class="text-muted d-block">👨‍🏫 {{ schedule.Professor_name }}</small>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted text-center py-4">No schedule for today.</p>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-light">
+          <div class="d-flex gap-2 justify-content-end">
+            <a href="{{ url_for('student_schedule', view='previous') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-left"></i> Previous</a>
+            <a href="{{ url_for('student_schedule') }}" class="btn btn-sm btn-primary"><i class="bi bi-calendar"></i> All Schedules</a>
+            <a href="{{ url_for('student_schedule', view='upcoming') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-right"></i> Upcoming</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exam Performance Section -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header" style="background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+          <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Performance</h5>
+        </div>
+        <div class="card-body">
+          {% if exam_performance and exam_performance|length > 0 %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th><i class="bi bi-calendar-event"></i> Exam Date</th>
+                    <th><i class="bi bi-book"></i> Subject</th>
+                    <th><i class="bi bi-star-fill"></i> Marks</th>
+                    <th><i class="bi bi-chat"></i> Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for perf in exam_performance %}
+                    <tr>
+                      <td>{{ perf.exam.Date }}</td>
+                      <td>{{ perf.exam.Subject }}</td>
+                      <td>
+                        <strong>{{ perf.marks.Marks_obtained if perf.marks.Marks_obtained is not none else 'N/A' }}</strong>
+                        {% if perf.exam.Total_marks %}
+                          / {{ perf.exam.Total_marks }}
+                        {% endif %}
+                      </td>
+                      <td>{{ perf.marks.Remarks or '-' }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted text-center py-4">No exam marks recorded yet.</p>
+          {% endif %}
+          {% if exam_performance and exam_performance|length > 0 %}
+            <div class="text-center mt-3">
+              <a href="{{ url_for('student_performance') }}" class="btn btn-primary">
+                <i class="bi bi-graph-up-arrow"></i> View Full Performance
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Information Card -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header" style="background: linear-gradient(90deg, #ffd60a 0%, #ffc300 100%); color: #333;">
+          <h5 class="mb-0"><i class="bi bi-info-circle-fill"></i> Personal Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">Student ID:</dt><dd class="col-sm-8">{{ student.Student_id }}</dd>
+                <dt class="col-sm-4">Name:</dt><dd class="col-sm-8">{{ student.Student_name }}</dd>
+                <dt class="col-sm-4">Class:</dt><dd class="col-sm-8">{{ student.Standard }}</dd>
+                <dt class="col-sm-4">School:</dt><dd class="col-sm-8">{{ student.School_name }}</dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">Father:</dt><dd class="col-sm-8">{{ student.Father_name }}</dd>
+                <dt class="col-sm-4">Mother:</dt><dd class="col-sm-8">{{ student.Mother_name }}</dd>
+                <dt class="col-sm-4">Phone:</dt><dd class="col-sm-8">{{ student.Student_number }}</dd>
+                <dt class="col-sm-4">Gender:</dt><dd class="col-sm-8">{{ student.Gender }}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-end bg-light">
+          <a href="/student_detail/{{ student.Student_id }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> View Full Profile</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header" style="background: linear-gradient(90deg, #ef476f 0%, #ffa94d 100%); color: white;">
+          <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="btn-group flex-wrap" role="group">
+            <a href="/student_attendence/{{ student.Student_id }}" class="btn btn-outline-primary"><i class="bi bi-graph-up"></i> View Attendance</a>
+            <a href="/view_Student_schedule/{{ student.Standard }}" class="btn btn-outline-success"><i class="bi bi-calendar-event"></i> View Schedule</a>
+            <a href="/student_notifications" class="btn btn-outline-info"><i class="bi bi-bell"></i> Announcements</a>
+            <a href="/logout" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

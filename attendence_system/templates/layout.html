@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+	<title>My Education Portal - Admin Dashboard</title>
+	
+	<style>
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --nav-blue: #154185;
+  --nav-blue-dark: #243c63;
+  --primary-blue: #3b6ea8;
+  --primary-blue-soft: #e6effa;
+
+  --page-bg: #e5f0fa;
+  --card-bg: #e5f0fa;
+  --card-border: #e4eaf6;
+
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+
+  --white: #ffffff;
+}
+
+/* BODY */
+body {
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--page-bg);
+  color: var(--text-dark);
+}
+
+/* NAVBAR */
+.navbar {
+  background: linear-gradient(
+    to right,
+    var(--nav-blue),
+    var(--nav-blue-dark)
+  ) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  padding: 0.8rem 1.5rem;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #eaf0f8 !important;
+  letter-spacing: 0.5px;
+}
+
+.navbar .nav-link {
+  color: #eaf0f8 !important;
+  margin: 0 0.3rem;
+  padding: 0.45rem 0.9rem !important;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+}
+
+.navbar .nav-link:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+/* PROFILE BUTTON */
+.btn-outline-light {
+  border-color: rgba(255,255,255,0.6);
+  color: white;
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255,255,255,0.15);
+  border-color: white;
+}
+
+/* DASHBOARD HEADER (EMPTY STRIP UNDER NAVBAR) */
+.dashboard-header {
+  background: linear-gradient(
+    to bottom,
+    #e9eff6,
+    transparent
+  );
+  padding: 2.2rem 0;
+  margin-bottom: 1.5rem;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  border: 1px solid var(--card-border);
+}
+
+/* SEARCH SECTION */
+.search-section input {
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  padding: 0.7rem 1rem;
+  background-color: #ffffff;
+}
+
+.search-section input:focus {
+  border-color: var(--white);
+  box-shadow: 0 0 0 0.15rem rgba(59,110,168,0.25);
+}
+
+.search-section button {
+  border-radius: 10px;
+  padding: 0.7rem 1.8rem;
+  font-weight: 600;
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  transition: all 0.25s ease;
+}
+
+.search-section button:hover {
+  background-color: #6b05fa;
+  transform: translateY(-1px);
+}
+
+/* CARDS (STUDENT LIST) */
+.card {
+  background-color: white;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  margin-bottom: 18px;
+}
+
+/* STUDENT ROW */
+.attendance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  background-color: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  border-left: 4px solid var(--primary-blue);
+}
+
+/* TEXT */
+.student-name {
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--text-dark);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.table{
+  --bs-table-bg-type: var(--page-bg);
+}
+
+/* Form */
+.form-select{
+  background:var(--page-bg);
+}
+
+/* FOOTER */
+footer {
+  background: linear-gradient(
+    to right,
+    var(--nav-blue),
+    var(--nav-blue-dark)
+  );
+  color: #eaf0f8;
+  text-align: center;
+  padding: 1.8rem;
+  margin-top: 3rem;
+}
+</style>
+
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='/favicon.ico') }}" />
+        
+</head>
+ {% if session.get('role') in ['admin','root'] %}
+<body class="{% if session.get('role') == 'root' %}role-root{% elif session.get('role') == 'admin' %}role-admin{% else %}role-staff{% endif %}">
+	<!-- Navigation Bar -->
+	<nav class="navbar navbar-expand-lg navbar-dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="/">
+				<i class="bi bi-mortarboard-fill"></i> MyEducationPortal
+			</a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+					data-bs-target="#admissionNav" aria-controls="admissionNav"
+					aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse" id="admissionNav">
+				<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+					<li class="nav-item">
+						<a class="nav-link" href="/">
+							<i class="bi bi-house-fill"></i> Home
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/Student_reg">
+							<i class="bi bi-person-plus-fill"></i> Admission
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/class">
+							<i class="bi bi-collection-fill"></i> Batches
+						</a>
+					</li>
+				   <li class="nav-item">
+					   <a class="nav-link" href="/schedule">
+						   <i class="bi bi-calendar-event-fill"></i> Schedule
+					   </a>
+				   </li>
+
+				   <li class="nav-item">
+					   <a class="nav-link" href="/exams">
+						   <i class="bi bi-pencil-square"></i> Exams
+					   </a>
+				   </li>
+				   {% if session.get('role') in ['admin', 'root'] %}
+				   <li class="nav-item">
+					   <a class="nav-link" href="{{ url_for('admin_performance') }}">
+						   <i class="bi bi-bar-chart"></i>PerformanceAnalytics
+					   </a>
+				   </li>
+				   {% endif %}
+				<li class="nav-item">
+					<a class="nav-link" href="/Notification">
+						<i class="bi bi-bell-fill"></i> Notices
+					</a>
+					</li>
+                   <li class="nav-item">
+                       <a class="nav-link" href="/promote">
+                           <i class="bi bi-arrow-up-circle"></i> Promote
+                       </a>
+                   </li>
+				</ul>
+			</div>
+
+			<!-- Profile dropdown placed at the far right (outside collapsible menu) -->
+			{% if session.get('role') == 'root' %}
+				{% set Profile = url_for('root_dashboard') %}
+			{% elif session.get('role') == 'admin' %}
+				{% if session.get('user') %}
+					{% set Profile = url_for('admin_profile', admin_id=session.get('user')) %}
+				{% else %}
+					{% set Profile = url_for('home') %}
+				{% endif %}
+			{% else %}
+				{% set Profile = url_for('student_dashboard') %}
+			{% endif %}
+			
+			<div class="d-flex align-items-center ms-3">
+				<div class="dropdown">
+					<button class="btn btn-outline-light btn-sm dropdown-toggle rounded-pill d-flex align-items-center"
+						type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+						<i class="bi bi-person-circle" style="font-size:1.25rem;"></i>
+						<span class="d-none d-md-inline ms-2">Menu</span>
+					</button>
+					
+					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+						<li><a class="dropdown-item" href="{{ Profile }}">Profile</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+					</ul>
+				</div>
+			</div>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Dashboard Header -->
+	<div class="dashboard-header">
+		<div class="container-fluid text-center">
+			<!-- Header subtitle removed per user request -->
+		</div>
+	</div>
+{% else %}
+<body class="role-student">
+<div class="container-fluid mt-3">
+
+  <div class="dashboard-header-student"
+       style="background: linear-gradient(135deg, #154185 0%, #243c63 100%);
+              color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+    
+    <div class="row align-items-center">
+      
+      <!-- Student Photo -->
+      <div class="col-md-1 col-3 text-center">
+        <img src="{{ url_for('static', filename='uploads/' + (student.Student_photo if student.Student_photo else 'placeholder.png')) }}"
+             alt="{{ student.Student_name }}"
+             class="img-fluid rounded-circle"
+             style="width: 70px; height: 70px; object-fit: cover; border: 3px solid white;">
+      </div>
+
+      <!-- Student Info -->
+      <div class="col-md-11 col-9">
+        <h4 class="mb-1">
+          <i class="bi bi-person-fill"></i> Welcome, {{ student.Student_name }}
+        </h4>
+
+        <p class="mb-0">
+          <strong>ID:</strong> {{ student.Student_id }} |
+          <strong>Class:</strong> {{ student.Standard }}
+        </p>
+
+        <p class="mb-0">
+          <small>
+            Last Login:
+            {{ last_login.strftime('%d %b %Y, %I:%M %p') if last_login else 'First login' }}
+          </small>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+{% endif %}
+	{% block body %}
+	<div class="container-fluid">
+		<div class="main-content">
+		</div>
+	</div>
+	{% endblock %}
+
+	<footer style="text-align: center; padding: 2rem; color: white; margin-top: 3rem;">
+		<p>&copy; 2025 My Education Portal. All rights reserved.</p>
+	</footer>
+</body>
+</html>

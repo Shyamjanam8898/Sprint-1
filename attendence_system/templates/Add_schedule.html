@@ -1,0 +1,140 @@
+<!-- filepath: c:\Users\A M Prajapati\PycharmProjects\PythonProject\PythonProject\attendence_system\templates\Add_schedule.html -->
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="main-content" style="max-width:700px; margin:auto;">
+    <div class="text-center mb-3">
+      <h3 class="mb-1">Add Class Schedule</h3>
+      <p class="small-muted">Create a new schedule for the selected class</p>
+    </div>
+    <div class="schedule-form">
+        <div class="form-title">Add Class Schedule</div>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="class_id" class="form-label">Class</label>
+                <select name="class_id" id="class_id" class="form-select" required>
+                    <option value="" disabled selected>Select Class</option>
+                    {% for class in classes %}
+                        <option value="{{ class }}">{{ class }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="subject" class="form-label">Subject</label>
+                <input type="text" name="subject" id="subject" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" name="date" id="date" class="form-control" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="start_hour" class="form-label">Start Time - Hour</label>
+                    <select name="start_hour" id="start_hour" class="form-select" required>
+                        <option value="">Select Hour</option>
+                        {% for h in range(1, 13) %}
+                            <option value="{{ '%02d'|format(h) }}">{{ h }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="start_minute" class="form-label">Minute</label>
+                    <select name="start_minute" id="start_minute" class="form-select" style="background:page" required>
+                        <option value="">Select Minute</option>
+                        {% for m in range(0, 60, 5) %}
+                            <option value="{{ '%02d'|format(m) }}">{{ '%02d'|format(m) }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="start_period" class="form-label">Period</label>
+                    <select name="start_period" id="start_period" class="form-select" required>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="end_hour" class="form-label">End Time - Hour</label>
+                    <select name="end_hour" id="end_hour" class="form-select" required>
+                        <option value="">Select Hour</option>
+                        {% for h in range(1, 13) %}
+                            <option value="{{ '%02d'|format(h) }}">{{ h }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="end_minute" class="form-label">Minute</label>
+                    <select name="end_minute" id="end_minute" class="form-select" required>
+                        <option value="">Select Minute</option>
+                        {% for m in range(0, 60, 5) %}
+                            <option value="{{ '%02d'|format(m) }}">{{ '%02d'|format(m) }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="end_period" class="form-label">Period</label>
+                    <select name="end_period" id="end_period" class="form-select" required>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="professor_name" class="form-label">Professor Name</label>
+                <input type="text" name="professor_name" id="professor_name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="marker" class="form-label">Designated Marker (who will mark attendance)</label>
+                <select name="marker" id="marker" class="form-select" required>
+                    <option value="">(none)</option>
+                    {% for admin in admins %}
+                        <option value="{{ admin.Admin_id }}">{{ admin.Name }} ({{ admin.Admin_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="allowed_admins" class="form-label">Visible To (select admins who can view/edit)</label>
+                <select name="allowed_admins" id="allowed_admins" class="form-select" multiple required>
+                    {% for admin in admins %}
+                        <option value="{{ admin.Admin_id }}">{{ admin.Name }} ({{ admin.Admin_id }})</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Hold Ctrl (or Cmd) and click to select multiple admins.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add Schedule</button>
+        </form>
+    </div>
+  </div>
+</div>
+
+{% if show_success %}
+<script>
+  alert('Schedule added successfully!');
+  window.location.href = '/schedule';
+</script>
+{% endif %}
+
+<script>
+  // Auto-select the marker in "Visible To" field when marker is selected
+  document.getElementById('marker').addEventListener('change', function() {
+    const markerValue = this.value;
+    const allowedAdminsSelect = document.getElementById('allowed_admins');
+    
+    if (markerValue) {
+      // Select the marker option in allowed_admins
+      const option = allowedAdminsSelect.querySelector(`option[value="${markerValue}"]`);
+      if (option) {
+        option.selected = true;
+      }
+    }
+  });
+</script>
+{% endblock %}

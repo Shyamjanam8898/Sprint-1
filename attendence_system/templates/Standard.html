@@ -1,0 +1,32 @@
+<!-- filepath: c:\Users\A M Prajapati\PycharmProjects\PythonProject\PythonProject\attendence_system\templates\Standard.html -->
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="main-content" style="max-width:700px; margin:auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 class="mb-1">Attendance - Batches</h3>
+          <p class="small-muted">Click a batch to view students</p>
+        <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#promoteModal">Promote Class</button>
+      </div>
+    </div>
+    <div class="list-group mb-3">
+      {% for cls, count in classes %}
+        {% if link_to_schedule %}
+          <a href="{{ url_for('show_schedule', Standard=cls) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+        {% else %}
+          <a href="{{ url_for('students_by_standard', Standard=cls) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+        {% endif %}
+          <div>
+            <span class="fw-bold">{{ cls }}</span>
+          </div>
+          <span class="badge bg-secondary rounded-pill">{{ count }}</span>
+        </a>
+      {% else %}
+        <div class="list-group-item py-3">No batches found.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Server Dashboard</h3>
+    <div>
+      <a href="/create_admin" class="btn btn-primary">Add Admin</a>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Total Admins</h5>
+        <h2>{{ total_admins }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-3">
+        <h5>Total Students</h5>
+        <h2>{{ total_students }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Admins</h5>
+      <table class="table" style="background-color: #fb0b0b;">
+        <thead>
+          <tr>
+            <th >Photo</th>
+            <th>Admin ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Password</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in admins %}
+          <tr>
+            <td class="align-middle">
+              <img src="{{ url_for('static', filename='uploads/' + (a.Photo if a.Photo else 'placeholder.png')) }}" alt="{{ a.Name }}" style="height:40px; width:40px; object-fit:cover; border-radius:4px;">
+            </td>
+            <td class="align-middle">{{ a.Admin_id }}</td>
+            <td class="align-middle">{{ a.Name }}</td>
+            <td class="align-middle">{{ a.Email }}</td>
+            <td class="align-middle">{{ a.Phone }}</td>
+            <td class="align-middle">
+              {% if admin_passwords.get(a.Admin_id) %}
+                <strong>{{ admin_passwords[a.Admin_id] }}</strong>
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </td>
+            <td class="align-middle">
+              <a href="/admin_profile/{{ a.Admin_id }}" class="btn btn-sm btn-outline-primary">View</a>
+              <a href="/edit_admin/{{ a.Admin_id }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+              <form method="POST" action="/reset_admin_password/{{ a.Admin_id }}" style="display:inline-block; margin-left:6px;">
+                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Reset password for {{ a.Admin_id }}?')">Reset Password</button>
+              </form>
+              <form method="POST" action="/delete_admin/{{ a.Admin_id }}" style="display:inline-block; margin-left:6px;">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete admin {{ a.Admin_id }}? This cannot be undone.')">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

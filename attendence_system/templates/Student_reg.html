@@ -1,0 +1,374 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<style>
+        .reg-card { max-width: 900px; margin: 0 auto; border-radius: 12px; overflow: hidden; }
+        .reg-header { background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 26px 28px; }
+        .reg-header h2 { margin:0; font-weight:700; letter-spacing:0.3px; }
+        .reg-sub { opacity:0.95; margin-top:6px; }
+        .reg-body { padding: 28px; background: #fff; }
+        .photo-panel { background: #f7f9ff; border-radius: 10px; padding: 18px; }
+        .photo-preview { width:140px; height:140px; object-fit:cover; border-radius:10px; border:1px solid #e6e9f2; box-shadow: 0 6px 18px rgba(102,126,234,0.12); }
+        .photo-actions .btn { min-width:110px; }
+        .form-label { font-weight:600; }
+        .small-muted { color:#6c757d; font-size:0.9rem; }
+        .btn-primary, .btn-success { box-shadow: 0 6px 18px rgba(102,126,234,0.12); }
+        @media (max-width:767px) { .photo-preview { width:110px; height:110px; } }
+
+        /* Required field red star */
+        .required-star::after {
+            content: " *";
+            color: red;
+            font-weight: bold;
+        }
+</style>
+
+<div class="container-fluid">
+    <div class="card reg-card shadow-sm">
+        <div class="reg-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-person-plus-fill"></i> Student Registration</h2>
+                    <div class="reg-sub">Add a new student — all fields are required</div>
+                </div>
+                <div class="text-end d-none d-md-block small-muted">
+                    <div>
+                    <a href="{{ url_for('home') }}" class="btn btn-secondary mb-3">Back to Home</a></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="reg-body">
+            <form method="POST" enctype="multipart/form-data" action="/Student_reg">
+                {% if errors %}
+                <div id="formErrors" class="alert alert-danger">
+                    <ul class="mb-0">
+                        {% for err in errors %}
+                        <li>{{ err }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <div id="formErrors" style="display:none"></div>
+                {% endif %}
+
+                <div class="row mb-3">
+                    <div class="col-lg-5">
+                        <div class="photo-panel text-center">
+                            <div class="mb-3">
+                                <img id="preview" src="" alt="Preview" class="photo-preview" style="display:none;">
+                                <div id="placeholder" class="photo-preview d-flex align-items-center justify-content-center" style="background:#eef2ff; color:#667eea; font-weight:700;">PHOTO</div>
+                            </div>
+
+                            <div class="mb-2 text-start">
+                                <label class="form-label required-star">Upload Student Photo</label>
+                                <small class="text-danger d-block">Max Upload Size: 2MB</small>
+                                <input id="photoInput" type="file" class="form-control" name="photo" accept="image/*">
+                            </div>
+
+                            <div class="mt-2">
+                                <label class="form-label required-star">Or Capture Photo</label>
+                                <div>
+                                    <video id="camera" width="220" height="160" autoplay style="display:none; border-radius:8px; border:1px solid #e6e9f2; margin-bottom:8px;"></video>
+                                    <canvas id="canvas" width="220" height="160" style="display:none;"></canvas>
+                                </div>
+                                <div class="photo-actions d-flex gap-2 justify-content-center mt-2">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="startCamera()"><i class="bi bi-camera-video-fill"></i> Open Camera</button>
+                                    <button type="button" class="btn btn-success btn-sm" onclick="capturePhoto()"><i class="bi bi-camera2"></i> Capture</button>
+                                </div>
+                                <input type="hidden" name="captured_image" id="captured_image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">School/College Name</label>
+                                <input type="text" class="form-control" name="school_name" required value="{{ form.get('school_name','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Standard</label>
+                                <select id="standardSelect" name="standard" class="form-select" required>
+                                    <option value="" disabled selected>Select Standard</option>
+                                    {% for s in standards %}
+                                        <option value="{{ s }}" {% if form and form.get('standard')==s %}selected{% endif %}>{{ s }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6" id="streamWrap" style="display:none;">
+                                <label class="form-label">Stream (11th/12th)</label>
+                                <select id="streamSelect" name="stream" class="form-select">
+                                    <option value="" disabled selected>Select Stream</option>
+                                    {% for st in streams %}
+                                        <option value="{{ st }}" {% if form and form.get('stream')==st %}selected{% endif %}>{{ st }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6" id="batchWrap" style="display:none;">
+                                <label class="form-label">Batch (optional)</label>
+                                <input type="text" id="batchInput" name="batch" class="form-control" placeholder="Enter batch name (optional)" value="{{ form.get('batch','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Student Name</label>
+                                <input type="text" class="form-control" name="student_name" required value="{{ form.get('student_name','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Student Phone Number</label>
+                                <input type="text" class="form-control" name="student_number" required value="{{ form.get('student_number','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Parent Phone Number</label>
+                                <input type="text" class="form-control" name="parent_number" required value="{{ form.get('parent_number','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Gender</label>
+                                <div class="mt-1">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="gender" value="Male" required {% if form and form.get('gender')=='Male' %}checked{% endif %}>
+                                        <label class="form-check-label">Male</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="gender" value="Female" required {% if form and form.get('gender')=='Female' %}checked{% endif %}>
+                                        <label class="form-check-label">Female</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="gender" value="Other" required {% if form and form.get('gender')=='Other' %}checked{% endif %}>
+                                        <label class="form-check-label">Other</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Date of Birth</label>
+                                <input type="date" class="form-control" name="dob" required value="{{ form.get('dob','') if form else '' }}">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label required-star">Address</label>
+                                <textarea class="form-control" name="address" rows="2" required>{{ form.get('address','') if form else '' }}</textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Father Name</label>
+                                <input type="text" class="form-control" name="father_name" required value="{{ form.get('father_name','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Father Profession</label>
+                                <input type="text" class="form-control" name="father_profession" required value="{{ form.get('father_profession','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Mother Name</label>
+                                <input type="text" class="form-control" name="mother_name" required value="{{ form.get('mother_name','') if form else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label required-star">Mother Profession</label>
+                                <input type="text" class="form-control" name="mother_profession" required value="{{ form.get('mother_profession','') if form else '' }}">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-3">
+                    <button type="submit" class="btn btn-success btn-lg">Register Student</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let videoStarted = false;
+    let stream = null;
+
+    const photoInput = document.getElementById('photoInput');
+    const previewImg = document.getElementById('preview');
+    const placeholder = document.getElementById('placeholder');
+    photoInput && photoInput.addEventListener('change', function(e){
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev){
+            previewImg.src = ev.target.result;
+            previewImg.style.display = 'inline-block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function startCamera() {
+            const video = document.getElementById('camera');
+            if (!videoStarted && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                            .then(s => {
+                                    stream = s;
+                                    video.srcObject = stream;
+                                    videoStarted = true;
+                                    video.style.display = 'block';
+                                    placeholder.style.display = 'none';
+                                    previewImg.style.display = 'none';
+                            })
+                            .catch(err => console.log("Camera access denied", err));
+            }
+    }
+
+    function capturePhoto() {
+            const video = document.getElementById('camera');
+            const canvas = document.getElementById('canvas');
+            const preview = document.getElementById('preview');
+            const context = canvas.getContext('2d');
+            if (videoStarted) {
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const dataURL = canvas.toDataURL("image/png");
+                    document.getElementById('captured_image').value = dataURL;
+                    preview.src = dataURL;
+                    preview.style.display = 'inline-block';
+                    placeholder.style.display = 'none';
+                    if (stream) {
+                            stream.getTracks().forEach(track => track.stop());
+                            videoStarted = false;
+                            video.style.display = 'none';
+                    }
+            }
+    }
+</script>
+
+<script>
+        function validateRegistrationForm(){
+            const errors = [];
+            const form = document.querySelector('form');
+            const student_name = form['student_name'].value.trim();
+            const school_name = form['school_name'].value.trim();
+            const standard = form['standard'].value.trim();
+            const student_number = form['student_number'].value.trim();
+            const parent_number = form['parent_number'].value.trim();
+            const dob = form['dob'].value;
+            const photoInput = document.getElementById('photoInput');
+
+            if(!student_name) errors.push('Student name is required.');
+            if(!school_name) errors.push('School/College name is required.');
+            if(!standard) errors.push('Standard/Batch is required.');
+            if(!student_number) errors.push('Student phone/number is required.');
+            if(student_number && !/^[0-9]+$/.test(student_number)) errors.push('Student phone/number must contain only digits.');
+            if(!parent_number) errors.push('Parent phone number is required.');
+            if(parent_number && !/^[0-9]+$/.test(parent_number)) errors.push('Parent phone number must contain only digits.');
+            if(!dob) errors.push('Date of birth is required.');
+
+            if(photoInput && photoInput.files && photoInput.files[0]){
+                const allowed = ['png','jpg','jpeg','gif'];
+                const fn = photoInput.files[0].name.toLowerCase();
+                const ext = fn.split('.').pop();
+                if(!allowed.includes(ext)) errors.push('Uploaded photo must be an image (png/jpg/jpeg/gif).');
+            }
+
+            const errorsDiv = document.getElementById('formErrors');
+            if(errors.length){
+                let html = '<div class="alert alert-danger"><ul class="mb-0">';
+                errors.forEach(e=>{ html += '<li>'+e+'</li>'; });
+                html += '</ul></div>';
+                errorsDiv.style.display = 'block';
+                errorsDiv.innerHTML = html;
+                window.scrollTo({ top: errorsDiv.offsetTop - 20, behavior: 'smooth' });
+                return false;
+            }
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            const form = document.querySelector('form');
+            if(form){
+                form.onsubmit = validateRegistrationForm;
+            }
+        });
+</script>
+ 
+<!-- Modal for registration success -->
+{% if generated_id and generated_password and generated_name %}
+<div class="modal fade" id="regSuccessModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Registration Successful</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Name:</strong> {{ generated_name }}</p>
+        <p><strong>Student ID:</strong> {{ generated_id }}</p>
+        <p><strong>Password:</strong> {{ generated_password }}</p>
+        <p class="small text-muted">Please note down these credentials. Students can change password from profile later.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const std = document.getElementById('standardSelect');
+        const streamSel = document.getElementById('streamSelect');
+        const streamWrap = document.getElementById('streamWrap');
+        const batchWrap = document.getElementById('batchWrap');
+
+        std && std.addEventListener('change', function(){
+            if(this.value === '11th' || this.value === '12th'){
+                streamWrap.style.display = 'block';
+                batchWrap.style.display = 'block';
+            } else {
+                streamWrap.style.display = 'none';
+                batchWrap.style.display = 'block';
+            }
+        });
+
+        streamSel && streamSel.addEventListener('change', function(){ /* no-op */ });
+
+        // trigger initial show if values prefilled
+        if(document.getElementById('standardSelect').value){
+            const ev = new Event('change');
+            document.getElementById('standardSelect').dispatchEvent(ev);
+        }
+
+        // show modal if registration just happened
+        var modalEl = document.getElementById('regSuccessModal');
+        if(modalEl){
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    });
+</script>
+{% else %}
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const std = document.getElementById('standardSelect');
+        const streamSel = document.getElementById('streamSelect');
+        const streamWrap = document.getElementById('streamWrap');
+        const batchWrap = document.getElementById('batchWrap');
+
+        std && std.addEventListener('change', function(){
+            if(this.value === '11th' || this.value === '12th'){
+                streamWrap.style.display = 'block';
+                batchWrap.style.display = 'block';
+            } else {
+                streamWrap.style.display = 'none';
+                batchWrap.style.display = 'block';
+            }
+        });
+
+        streamSel && streamSel.addEventListener('change', function(){ /* no-op */ });
+    });
+</script>
+{% endif %}
+{% endblock %}

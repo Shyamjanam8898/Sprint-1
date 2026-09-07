@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      {% if success %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <h4 class="alert-heading">Admin Created Successfully!</h4>
+        <hr>
+        <p><strong>Admin ID:</strong> <code>{{ generated_id }}</code></p>
+        <p><strong>Password:</strong> <code>{{ generated_password }}</code></p>
+        <p class="mb-0">Make note of these credentials. The password cannot be recovered.</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <a href="{{ url_for('root_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+      {% endif %}
+
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Create Admin User</h4>
+          <p class="text-muted">Fill admin details and upload a photo. The system will generate Admin ID and Password.</p>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+                  {{ msg }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              <input type="text" name="phone" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Photo</label>
+              <input type="file" name="photo" class="form-control" accept="image/*">
+              <small class="text-muted">Supported formats: PNG, JPG, JPEG, GIF</small>
+            </div>
+            <button class="btn btn-primary" type="submit">Create Admin</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

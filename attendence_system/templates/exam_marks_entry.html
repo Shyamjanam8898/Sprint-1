@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid" style="max-width:900px; margin:auto;">
+
+    <div class="mb-4" style="background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 20px; border-radius: 12px;">
+        <h3 class="mb-0" style="color: white;">
+            <i class="bi bi-pencil"></i> Enter Marks – {{ exam.Subject }}
+        </h3>
+    </div>
+
+    <form method="POST">
+
+        <table class="table table-striped shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th>Marks</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for student in present_students %}
+                    <tr>
+                        <td>{{ student.Student_name }}</td>
+                        <td>{{ student.Student_id }}</td>
+
+                        <td>
+                            <input type="number" name="marks_{{ student.Student_id }}"
+                                   min="0" max="{{ exam.Total_marks }}" class="form-control"
+                                   value="{{ prefill.get(student.Student_id)['marks'] if prefill.get(student.Student_id) else '' }}"
+                                   required>
+                        </td>
+
+                        <td>
+                            <input type="text" name="remark_{{ student.Student_id }}"
+                                   class="form-control" placeholder="Optional"
+                                   value="{{ prefill.get(student.Student_id)['remarks'] if prefill.get(student.Student_id) else '' }}">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+        <button type="submit" class="btn btn-success btn-lg mt-2">
+            Save Marks
+        </button>
+
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="main-content" style="max-width:900px; margin:auto;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3><i class="bi bi-pencil-square"></i> Exam Management</h3>
+            <a href="/" class="btn btn-outline-secondary btn-sm">Back</a>
+        </div>
+
+        <div class="row">
+            {% for class_name, count in classes %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ class_name }}</h5>
+                            <p class="card-text text-muted">{{ count }} students</p>
+                            <a href="{{ url_for('exam_schedules', Standard=class_name) }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-calendar-event"></i> View Exams
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

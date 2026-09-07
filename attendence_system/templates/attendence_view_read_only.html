@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 class="mb-0">Attendance (Read-only) — {{ schedule.Subject }} ({{ schedule.Professor_name }})</h3>
+        <div class="small text-muted">Class: <strong>{{ Standard }}</strong> &middot; Date: {{ schedule.Date }} &middot; {{ schedule.Start_time }} - {{ schedule.End_time }}</div>
+      </div>
+      <div>
+        <a href="{{ url_for('show_schedule', Standard=Standard) }}" class="btn btn-outline-secondary">&larr; Back to Schedules</a>
+      </div>
+    </div>
+
+    {% if entries %}
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width:96px">Photo</th>
+              <th>Name</th>
+              <th style="width:140px">Status</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in entries %}
+            <tr>
+              <td>
+                <img src="{{ url_for('static', filename='uploads/' ~ (e.photo if e.photo else 'placeholder.png')) }}" alt="{{ e.Student_name }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;">
+              </td>
+              <td>
+                <div class="fw-semibold">{{ e.Student_name }}</div>
+                <div class="text-muted small">ID: {{ e.Student_id }}</div>
+              </td>
+              <td>
+                {% if e.Status == 'Present' %}
+                  <span class="badge bg-success">Present</span>
+                {% elif e.Status == 'Absent' %}
+                  <span class="badge bg-danger">Absent</span>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td class="small text-muted">{{ e.Remark or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-info">No attendance records found for this schedule.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

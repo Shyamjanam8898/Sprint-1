@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="main-content" style="max-width:900px; margin:auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 style="color: black;"><i class="bi bi-arrow-up-circle"></i> Promote Students</h3>
+      <a class="btn btn-outline-secondary btn-sm" href="/root_dashboard">Back</a>
+    </div>
+    
+    {% if students and students|length > 0 %}
+      <form method="POST">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th style="width:4%"><input type="checkbox" id="select_all"></th>
+                <th>Student Name</th>
+                <th>Student ID</th>
+                <th>Current Standard</th>
+                <th>Next Standard</th>
+              </tr>
+            </thead>
+            <tbody >
+              {% for s in students %}
+              <tr>
+                <td><input type="checkbox" name="promote_ids" value="{{ s.Student_id }}"></td>
+                <td>{{ s.Student_name }}</td>
+                <td>{{ s.Student_id }}</td>
+                <td>{{ s.Standard }}</td>
+                <td>{{ next_map.get(s.Standard, 'N/A') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit">Promote Selected</button>
+          <a href="?standard=ALL" class="btn btn-outline-secondary">Show All Promotable</a>
+        </div>
+      </form>
+    {% else %}
+      <div class="alert alert-info">
+        No promotable students found.
+        <div class="mt-2 small">
+          You can promote an individual student from their profile page, or promote an entire batch from the Batches page.
+          <a href="/class" class="ms-2">Batches</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.getElementById('select_all')?.addEventListener('change', function(e){
+  const checked = e.target.checked;
+  document.querySelectorAll('input[name="promote_ids"]').forEach(cb => cb.checked = checked);
+});
+</script>
+{% endblock %}

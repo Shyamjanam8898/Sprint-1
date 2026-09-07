@@ -1,0 +1,215 @@
+{% extends "layout_student.html" %}
+
+{% block body %}
+<div class="mb-4" style="background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 20px; border-radius: 12px;">
+  <h2 class="mb-1" style="color: white;"><i class="bi bi-graph-up-arrow"></i> Performance Dashboard</h2>
+  <p style="color: rgba(255,255,255,0.9);">{{ student.Student_name }} | {{ student.Standard }} | Student ID: {{ student.Student_id }}</p>
+</div>
+
+    <!-- Overall Statistics Card -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Exams</h6>
+                    <h3 class="mb-0">{{ performance_list|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Overall Percentage</h6>
+                    <h3 class="mb-0">{{ overall_percentage }}%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Your Rank</h6>
+                    <h3 class="mb-0">
+                        {% if rank_info.rank == 'N/A' %}
+                            N/A
+                        {% else %}
+                            {{ rank_info.rank }}
+                            {% if rank_info.rank == 1 %}
+                                <span class="fs-6">🥇</span>
+                            {% elif rank_info.rank == 2 %}
+                                <span class="fs-6">🥈</span>
+                            {% elif rank_info.rank == 3 %}
+                                <span class="fs-6">🥉</span>
+                            {% endif %}
+                        {% endif %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Class Strength</h6>
+                    <h3 class="mb-0">{{ rank_info.student_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pie Chart Section -->
+    {% if performance_list|length > 0 %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Performance Distribution</h5>
+                </div>
+                <div class="card-body text-center">
+                    <canvas id="performanceChart" style="max-width:400px; margin:0 auto;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Marks Summary</h6>
+                        <div class="progress mb-2" style="height:25px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ (total_marks_obtained / total_marks_max * 100) if total_marks_max > 0 else 0 }}%;" 
+                                 aria-valuenow="{{ overall_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ total_marks_obtained }}/{{ total_marks_max }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Highest:</strong> 
+                            {% if performance_list %}
+                                {{ performance_list|map(attribute='marks_obtained')|max }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
+                        <p class="mb-1"><strong>Lowest:</strong> 
+                            {% if performance_list %}
+                                {{ performance_list|map(attribute='marks_obtained')|min }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
+                        <p class="mb-0"><strong>Average:</strong> 
+                            {% if performance_list %}
+                                {{ (total_marks_obtained / performance_list|length)|round(2) }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Tests Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-list-check"></i> All Exams & Marks</h5>
+                </div>
+                <div class="card-body">
+                    {% if performance_list|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bi bi-calendar-event"></i> Date</th>
+                                        <th><i class="bi bi-book"></i> Subject</th>
+                                        <th><i class="bi bi-star-fill"></i> Marks</th>
+                                        <th><i class="bi bi-percent"></i> Percentage</th>
+                                        <th><i class="bi bi-chat"></i> Remarks</th>
+                                        <th><i class="bi bi-arrow-right"></i> Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for perf in performance_list %}
+                                        <tr>
+                                            <td><strong>{{ perf.date }}</strong></td>
+                                            <td>{{ perf.subject }}</td>
+                                            <td>
+                                                <strong>{{ perf.marks_obtained }}</strong>
+                                                {% if perf.total_marks %}
+                                                    / {{ perf.total_marks }}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ perf.percentage }}%</span>
+                                            </td>
+                                            <td>{{ perf.remarks or '-' }}</td>
+                                            <td>
+                                                <a href="{{ url_for('student_exam_detail', exam_id=perf.exam_id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No exam marks recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+<script>
+    // Performance Pie Chart
+    {% if performance_list|length > 0 %}
+    const perfCtx = document.getElementById('performanceChart').getContext('2d');
+    const perfChart = new Chart(perfCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for perf in performance_list %}
+                    '{{ perf.subject }} ({{ perf.percentage }}%)',
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for perf in performance_list %}
+                        {{ perf.percentage }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+                ],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+
+{% endblock %}

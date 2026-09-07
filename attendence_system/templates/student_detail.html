@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+    {% if session.get('role') in ['admin','root'] %}
+    <a href="{{ url_for('home') }}" class="btn btn-secondary mb-3">Back to Home</a>
+    {% else %}
+    <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+    {% endif %}
+    
+    <div class="row">
+        <!-- Student Profile Card -->
+        <div class="col-md-4">
+            <div class="card shadow-lg">
+                <div class="card-body text-center">
+                    {% if student.Student_photo %}
+                        <img src="{{ url_for('static', filename='uploads/' + student.Student_photo) }}" 
+                             alt="Student Photo" class="img-fluid rounded-circle mb-3" style="max-width: 200px; height: 200px; object-fit: cover;">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='uploads/placeholder.png') }}" 
+                             alt="Placeholder" class="img-fluid rounded-circle mb-3" style="max-width: 200px; height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <h3 class="card-title">{{ student.Student_name }}</h3>
+                    <p class="text-muted">ID: {{ student.Student_id }}</p>
+                    <p class="text-muted">Standard: {{ student.Standard }}</p>
+                                        {% if session.get('role') in ['admin','root'] %}
+                                        <div class="mt-3">
+                                            <form method="POST" action="{{ url_for('promote') }}" style="display:inline;">
+                                                <input type="hidden" name="promote_ids" value="{{ student.Student_id }}">
+                                                <input type="hidden" name="action" value="confirm">
+                                                <button class="btn btn-success btn-sm" type="submit" onclick="return confirm('Promote this student to the next standard?')">Promote Student</button>
+                                            </form>
+                                            <a href="{{ url_for('promote', student_id=student.Student_id) }}" class="btn btn-outline-secondary btn-sm ms-2">Open Promote Panel</a>
+                                        </div>
+                                        {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Details -->
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Date of Birth:</th>
+                            <td>{{ student.DOB }}</td>
+                        </tr>
+                        <tr>
+                            <th>Gender:</th>
+                            <td>{{ student.Gender }}</td>
+                        </tr>
+                        <tr>
+                            <th>Address:</th>
+                            <td>{{ student.Address }}</td>
+                        </tr>
+                        <tr>
+                            <th>School:</th>
+                            <td>{{ student.School_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date of Admission:</th>
+                            <td>{{ student.DOA }}</td>
+                        </tr>
+                        <tr>
+                            <th>Added By:</th>
+                            <td>{{ student.Added_by or student.Created_by or 'system' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Added On:</th>
+                            <td>{{ student.Created_at or student.DOA or 'N/A' }}</td>
+                        </tr>
+                        {% if student_password %}
+                        <tr>
+                            <th>Password:</th>
+                            <td><strong>{{ student_password }}</strong></td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card shadow-lg mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Student Contact:</th>
+                            <td>{{ student.Student_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Parent Contact:</th>
+                            <td>{{ student.Parent_number }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Parent Information -->
+            <div class="card shadow-lg mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Parent Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Father's Name:</th>
+                            <td>{{ student.Father_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Father's Profession:</th>
+                            <td>{{ student.Father_profession }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother's Name:</th>
+                            <td>{{ student.Mother_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mother's Profession:</th>
+                            <td>{{ student.Mother_profession }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Records Section -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Attendance Records</h5>
+                    <div class="small mt-1">Showing attendance from <strong>{{ attendance_start or 'N/A' }}</strong> to <strong>{{ attendance_end or 'N/A' }}</strong></div>
+                </div>
+                <div class="card-body">
+                    {% if attendance_records %}
+                        {% set present_count = attendance_records | selectattr('Status','equalto','Present') | list | length %}
+                        {% set absent_count = attendance_records | selectattr('Status','equalto','Absent') | list | length %}
+                        <div class="mb-3">
+                            <span class="badge bg-success me-2">Present: {{ present_count }}</span>
+                            <span class="badge bg-danger">Absent: {{ absent_count }}</span>
+                        </div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Class</th>
+                                    <th>Subject</th>
+                                    <th>Professor</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                    <th>Remark</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in attendance_records %}
+                                <tr>
+                                    <td>{{ record.Date }}</td>
+                                    <td>{{ record.Class }}</td>
+                                    <td>{{ record.Subject }}</td>
+                                    <td>{{ record.Professor_name }}</td>
+                                    <td>{{ record.Start_time }}</td>
+                                    <td>{{ record.End_time }}</td>
+                                    <td>
+                                        {% if record.Status == 'Present' %}
+                                            <span class="badge bg-success">{{ record.Status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ record.Status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.Remark }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted">No attendance records found for this student.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    .card-header {
+        border-radius: 10px 10px 0 0;
+    }
+    .img-fluid {
+        border: 3px solid #154185;
+    }
+</style>
+{% endblock %}

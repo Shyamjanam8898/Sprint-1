@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid" style="max-width:900px; margin:auto;">
+    
+    <h3 class="mb-4">
+        <i class="bi bi-clipboard-check"></i> Exam Attendance – {{ exam.Subject }}
+    </h3>
+
+    <form method="POST">
+
+        <table class="table table-bordered shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td>{{ student.Student_name }}</td>
+                        <td>{{ student.Student_id }}</td>
+
+                        <td>
+                            <input type="radio" name="status_{{ student.Student_id }}" value="Present" required
+                                {% if prefill.get(student.Student_id) and prefill[student.Student_id]['Status']|lower == 'present' %}checked{% endif %}> Present
+                            &nbsp;&nbsp;
+                            <input type="radio" name="status_{{ student.Student_id }}" value="Absent"
+                                {% if prefill.get(student.Student_id) and prefill[student.Student_id]['Status']|lower == 'absent' %}checked{% endif %}> Absent
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-success btn-lg mt-3">
+            Save Attendance
+        </button>
+
+    </form>
+</div>
+{% endblock %}

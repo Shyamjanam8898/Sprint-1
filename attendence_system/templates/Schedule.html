@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="main-content" style="max-width:900px; margin:auto;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h3 class="mb-1">Schedule for Standard {{ Standard }}</h3>
+                    <div class="small text-muted">
+                            {% if view_type == 'previous' %}
+                                Viewing: <strong>Previous</strong>
+                            {% elif view_type == 'upcoming' %}
+                                Viewing: <strong>Upcoming</strong>
+                            {% else %}
+                                Viewing: <strong>Today</strong>
+                            {% endif %}
+                    
+                        <div class="d-flex gap-2 align-items-center">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('show_schedule', Standard=Standard, view='previous') }}" class="btn btn-outline-secondary{% if view_type=='previous' %} active{% endif %}">Previous</a>
+                                <a href="{{ url_for('show_schedule', Standard=Standard) }}" class="btn btn-outline-secondary{% if view_type=='today' %} active{% endif %}">Today</a>
+                                <a href="{{ url_for('show_schedule', Standard=Standard, view='upcoming') }}" class="btn btn-outline-secondary{% if view_type=='upcoming' %} active{% endif %}">Upcoming</a>
+                            </div>
+                            {% if view_type=='previous' %}
+                                <form method="get" action="" class="ms-2 d-inline">
+                                    <input type="hidden" name="view" value="previous">
+                                    <input type="date" name="date" value="{{ view_date }}" class="form-control form-control-sm" onchange="this.form.submit()">
+                                </form>
+                            {% endif %}
+                                    {% if session.get('role') in ['admin','root'] %}
+                                        <a href="{{ url_for('add_schedule') }}" class="btn btn-primary">Add Schedule</a>
+                                    {% endif %}
+                                    <div>
+                                        <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">&larr; Back to Home</a>
+                                    </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+        {% macro render_table(items) %}
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Professor</th>
+                            <th>Action</th>
+                            <th>Attendence Audit</th>
+                            <th>Modify</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        {% set sch = item.schedule %}
+                        <tr>
+                            <td>{{ sch.Date }}</td>
+                            <td>
+                                {{ sch.Subject }}
+                                {% if item.attended %}
+                                    <span class="badge bg-success ms-2">Attendance Submitted</span>
+                                    <div class="small text-muted mt-1">Last: {{ item.last_marked or '—' }} {% if item.last_marked_by %}by {{ item.last_marked_by }}{% endif %}</div>
+                                {% endif %}
+                                {% if session.get('role') in ['admin','root'] %}
+                                    <div class="small text-muted mt-1">
+                                        Added by: {{ sch.Added_by or 'system' }}
+                                        {% if sch.Marker %} | Marker: {{ sch.Marker }}{% endif %}
+                                        {% if sch.Allowed_admins %} | Visible to: {{ sch.Allowed_admins }}{% endif %}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ sch.Start_time }}</td>
+                            <td>{{ sch.End_time }}</td>
+                            <td>{{ sch.Professor_name }}</td>
+                            <td>
+                                {% if session.get('role') in ['admin','root'] %}
+                                    <a href="{{ url_for('attendance_take', Standard=Standard, schedule_id=sch.Schedule_id) }}" class="btn btn-success btn-sm ms-2">
+                                        {% if item.attended %}Edit Attendance{% else %}Mark Attendance{% endif %}
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.attended %}
+                                    <a href="{{ url_for('attendance_view_read_only', Standard=Standard, schedule_id=sch.Schedule_id) }}" class="btn btn-outline-secondary btn-sm me-1">View</a>
+                                {% else %}
+                                    <span class="text-muted">Attendance not taken</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('edit_schedule', schedule_id=sch.Schedule_id) }}" class="btn btn-outline-primary btn-sm me-1">Edit</a>
+                                <form method="POST" action="{{ url_for('delete_schedule', schedule_id=sch.Schedule_id) }}" style="display:inline-block;" onsubmit="return confirm('Delete this schedule?');">
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="small text-muted">
+                                {% if session.get('role') in ['admin','root'] and item.audits %}
+                                    <strong>Audit trail:</strong>
+                                    <ul class="mb-0">
+                                    {% for a in item.audits %}
+                                        <li>{{ a.timestamp }} — {{ a.action|capitalize }} by {{ a.user or 'system' }}{% if a.details %}: {{ a.details }}{% endif %}</li>
+                                    {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endmacro %}
+
+        {% if schedules and schedules|length > 0 %}
+            {{ render_table(schedules) }}
+        {% else %}
+            <div class="alert alert-info text-center">No schedule found for this view.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

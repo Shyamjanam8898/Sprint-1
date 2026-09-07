@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-3 text-center">
+      <img src="{{ url_for('static', filename='uploads/' + (admin.Photo if admin.Photo else 'placeholder.png')) }}" 
+           alt="{{ admin.Name }}" class="img-fluid rounded" style="max-width: 200px; height: auto;">
+    </div>
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Admin Profile — {{ admin.Name }}</h4>
+          <dl class="row">
+            <dt class="col-sm-3">Admin ID</dt><dd class="col-sm-9">{{ admin.Admin_id }}</dd>
+            <dt class="col-sm-3">Username</dt><dd class="col-sm-9">{{ admin.Admin_id }}</dd>
+            <dt class="col-sm-3">Name</dt><dd class="col-sm-9">{{ admin.Name }}</dd>
+            <dt class="col-sm-3">Email</dt><dd class="col-sm-9">{{ admin.Email or 'N/A' }}</dd>
+            <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">{{ admin.Phone or 'N/A' }}</dd>
+            <dt class="col-sm-3">Role</dt><dd class="col-sm-9">admin</dd>
+            <dt class="col-sm-3">Date Created</dt><dd class="col-sm-9">{{ admin.Created_at }}</dd>
+            <dt class="col-sm-3">Last Login</dt><dd class="col-sm-9">{{ admin_last_login or 'N/A' }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

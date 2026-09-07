@@ -1,0 +1,15 @@
+{
+  "parameters":
+  {
+    "local_server": "True",
+    "local_uri": "mysql+pymysql://root:@localhost/attendence_system",
+    "prod-uri" : "mysql+pymysql://root:@localhost/attendence_system",
+    "Admin_user": "root",
+    "Admin_password": "root",
+    "Admin_email": "root@example.com",
+    "Admin_phone": "1234567890",
+    "Admin_created_at": "2025-11-20",
+    "root_photo": "placeholder.png",
+    "secret_key": "Akanksha@2005"
+  }
+}

@@ -1,0 +1,200 @@
+{% extends "layout_student.html" %}
+
+{% block body %}
+<div class="mb-4" style="background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 20px; border-radius: 12px;">
+  <a href="{{ url_for('student_performance') }}" class="btn btn-sm btn-outline-light mb-3">
+    <i class="bi bi-arrow-left"></i> Back to Performance
+  </a>
+  <h2 class="mb-1" style="color: white;"><i class="bi bi-file-text"></i> Exam Details</h2>
+        <p style="color: rgba(255,255,255,0.9);">{{ exam.Subject }} | {{ exam.Date }}</p>
+    </div>
+
+    <!-- Student Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Your Marks</h6>
+                    <h3 class="mb-0">{{ mark.Marks_obtained }}</h3>
+                    <small>/ {{ exam.Total_marks }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Percentage</h6>
+                    <h3 class="mb-0">{{ percentage }}%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Your Rank</h6>
+                    <h3 class="mb-0">
+                        {% if rank_info.rank == 'N/A' %}
+                            N/A
+                        {% else %}
+                            {{ rank_info.rank }}
+                            {% if rank_info.rank == 1 %}
+                                <span class="fs-6">🥇</span>
+                            {% elif rank_info.rank == 2 %}
+                                <span class="fs-6">🥈</span>
+                            {% elif rank_info.rank == 3 %}
+                                <span class="fs-6">🥉</span>
+                            {% endif %}
+                        {% endif %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Students</h6>
+                    <h3 class="mb-0">{{ rank_info.student_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pie Chart Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Score Distribution</h5>
+                </div>
+                <div class="card-body text-center">
+                    <canvas id="scoreChart" style="max-width:350px; margin:0 auto;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Exam Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Score Progress</h6>
+                        <div class="progress mb-2" style="height:25px;">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 style="width: {{ percentage }}%; background-color: {% if percentage >= 80 %}#28a745{% elif percentage >= 60 %}#ffc107{% else %}#dc3545{% endif %};"
+                                 aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Subject:</strong> {{ exam.Subject }}</p>
+                        <p class="mb-1"><strong>Date:</strong> {{ exam.Date }}</p>
+                        <p class="mb-1"><strong>Professor:</strong> {{ exam.Professor_name }}</p>
+                        <p class="mb-1"><strong>Time:</strong> {{ exam.Start_time }} - {{ exam.End_time }}</p>
+                        <p class="mb-0"><strong>Remarks:</strong> {{ mark.Remarks or '-' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Rankings -->
+    {% if all_rankings|length > 0 %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Class Rankings (This Exam)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:10%;">Rank</th>
+                                    <th style="width:40%;"><i class="bi bi-person"></i> Student Name</th>
+                                    <th style="width:20%;"><i class="bi bi-star-fill"></i> Marks</th>
+                                    <th style="width:30%;"><i class="bi bi-percent"></i> Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ranking in all_rankings %}
+                                    <tr {% if ranking.student_id == student.Student_id %}class="table-info"{% endif %}>
+                                        <td>
+                                            <strong>{{ ranking.rank }}
+                                                {% if ranking.rank == 1 %}
+                                                    <span>🥇</span>
+                                                {% elif ranking.rank == 2 %}
+                                                    <span>🥈</span>
+                                                {% elif ranking.rank == 3 %}
+                                                    <span>🥉</span>
+                                                {% endif %}
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            {{ ranking.student_name }}
+                                            {% if ranking.student_id == student.Student_id %}
+                                                <span class="badge bg-info">You</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><strong>{{ ranking.marks }}</strong></td>
+                                        <td>
+                                            <div class="progress" style="height:20px;">
+                                                <div class="progress-bar" 
+                                                     role="progressbar" 
+                                                     style="width: {{ ranking.percentage }}%;"
+                                                     aria-valuenow="{{ ranking.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                    {{ ranking.percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+<script>
+    // Score Distribution Pie Chart
+    const scoreCtx = document.getElementById('scoreChart').getContext('2d');
+    const remainingMarks = {{ exam.Total_marks }} - {{ mark.Marks_obtained }};
+    
+    const scoreChart = new Chart(scoreCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Obtained', 'Remaining'],
+            datasets: [{
+                data: [{{ mark.Marks_obtained }}, remainingMarks],
+                backgroundColor: [
+                    '#28a745',
+                    '#e9ecef'
+                ],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

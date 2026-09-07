@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4" style="max-width:700px; margin:auto;">
+  <h3>Edit Schedule</h3>
+  <form method="POST">
+    <div class="mb-3">
+      <label class="form-label">Class</label>
+      <input type="text" class="form-control" name="class_id" value="{{ schedule.Standard }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Subject</label>
+      <input type="text" class="form-control" name="subject" value="{{ schedule.Subject }}" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Date</label>
+      <input type="date" class="form-control" name="date" value="{{ schedule.Date }}" required>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Start Time - Hour</label>
+        <select name="start_hour" class="form-select" required>
+          <option value="">Select Hour</option>
+          {% for h in range(1, 13) %}
+              <option value="{{ '%02d'|format(h) }}" {% if schedule.start_hour == '%02d'|format(h) %}selected{% endif %}>{{ h }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Minute</label>
+        <select name="start_minute" class="form-select" required>
+          <option value="">Select Minute</option>
+          {% for m in range(0, 60, 5) %}
+              <option value="{{ '%02d'|format(m) }}" {% if schedule.start_minute == '%02d'|format(m) %}selected{% endif %}>{{ '%02d'|format(m) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 mb-3">
+        <label class="form-label">Period</label>
+        <select name="start_period" class="form-select" required>
+          <option value="AM" {% if schedule.start_period == 'AM' %}selected{% endif %}>AM</option>
+          <option value="PM" {% if schedule.start_period == 'PM' %}selected{% endif %}>PM</option>
+        </select>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">End Time - Hour</label>
+        <select name="end_hour" class="form-select" required>
+          <option value="">Select Hour</option>
+          {% for h in range(1, 13) %}
+              <option value="{{ '%02d'|format(h) }}" {% if schedule.end_hour == '%02d'|format(h) %}selected{% endif %}>{{ h }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Minute</label>
+        <select name="end_minute" class="form-select" required>
+          <option value="">Select Minute</option>
+          {% for m in range(0, 60, 5) %}
+              <option value="{{ '%02d'|format(m) }}" {% if schedule.end_minute == '%02d'|format(m) %}selected{% endif %}>{{ '%02d'|format(m) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 mb-3">
+        <label class="form-label">Period</label>
+        <select name="end_period" class="form-select" required>
+          <option value="AM" {% if schedule.end_period == 'AM' %}selected{% endif %}>AM</option>
+          <option value="PM" {% if schedule.end_period == 'PM' %}selected{% endif %}>PM</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Professor</label>
+      <input type="text" class="form-control" name="professor_name" value="{{ schedule.Professor_name }}" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Designated Marker</label>
+      <select class="form-select" name="marker" required>
+        <option value="">(none)</option>
+        {% for admin in admins %}
+          <option value="{{ admin.Admin_id }}" {% if schedule.Marker == admin.Admin_id %}selected{% endif %}>{{ admin.Name }} ({{ admin.Admin_id }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Visible To (admins)</label>
+      {% set allowed = schedule.Allowed_admins.split(',') if schedule.Allowed_admins else [] %}
+      <select class="form-select" name="allowed_admins" multiple required>
+        {% for admin in admins %}
+          <option value="{{ admin.Admin_id }}" {% if admin.Admin_id in allowed %}selected{% endif %}>{{ admin.Name }} ({{ admin.Admin_id }})</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">Hold Ctrl (or Cmd) and click to select multiple admins.</div>
+    </div>
+    <button class="btn btn-primary">Save</button>
+    <a href="{{ url_for('show_schedule', Standard=schedule.Standard) }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+  </form>
+</div>
+
+<script>
+  // Auto-select the marker in "Visible To" field when marker is selected
+  document.querySelector('select[name="marker"]').addEventListener('change', function() {
+    const markerValue = this.value;
+    const allowedAdminsSelect = document.querySelector('select[name="allowed_admins"]');
+    
+    if (markerValue) {
+      // Select the marker option in allowed_admins
+      const option = allowedAdminsSelect.querySelector(`option[value="${markerValue}"]`);
+      if (option) {
+        option.selected = true;
+      }
+    }
+  });
+</script>
+{% endblock %}

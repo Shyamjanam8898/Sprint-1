@@ -1,0 +1,29 @@
+{% extends "layout_student.html" %}
+
+{% block body %}
+    {% if notifications and notifications|length > 0 %}
+      <div class="list-group">
+        {% for note in notifications %}
+          <div class="list-group-item list-group-item-action mb-2 shadow-sm rounded">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">{{ note.Message }}</h5>
+              <small class="text-muted">{{ note.Date }}</small>
+            </div>
+            {% if note.Attachment %}
+              <p class="mb-1">
+                <a href="{{ url_for('static', filename='uploads/' ~ note.Attachment) }}" download class="link-primary">
+                    <i class="bi bi-paperclip"></i> {{ note.Attachment }}
+                </a>
+              </p>
+            {% endif %}
+            {% if note.Message|length > 100 %}
+              <p class="mb-1">{{ note.Message[:200] }}{% if note.Message|length > 200 %}...{% endif %}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">No notices have been posted yet.</div>
+    {% endif %}
+
+{% endblock %}

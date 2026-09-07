@@ -1,0 +1,108 @@
+{% extends "layout_student.html" %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="main-content" style="max-width:900px; margin:auto;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-1"><i class="bi bi-calendar2-event"></i> My Schedule</h3>
+                <div class="small text-muted">
+                    {% if view_type == 'previous' %}
+                        Viewing: <strong>Previous</strong>
+                    {% elif view_type == 'upcoming' %}
+                        Viewing: <strong>Upcoming</strong>
+                    {% else %}
+                        Viewing: <strong>Today</strong>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('student_schedule', view='previous') }}" class="btn btn-outline-primary{% if view_type=='previous' %} active{% endif %}">Previous</a>
+                    <a href="{{ url_for('student_schedule') }}" class="btn btn-outline-primary{% if view_type=='today' or view_type=='' %} active{% endif %}">Today</a>
+                    <a href="{{ url_for('student_schedule', view='upcoming') }}" class="btn btn-outline-primary{% if view_type=='upcoming' %} active{% endif %}">Upcoming</a>
+                </div>
+
+                {% if view_type=='previous' %}
+                    <form method="get" action="" class="d-inline">
+                        <input type="hidden" name="view" value="previous">
+                        <input type="date" name="date" value="{{ view_date }}" class="form-control form-control-sm" onchange="this.form.submit()" style="width: 150px;">
+                    </form>
+                {% endif %}
+
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                {% if schedules and schedules|length > 0 %}
+                    <div class="schedule-list">
+                        {% for schedule in schedules %}
+                            <div class="schedule-item mb-3 pb-3 border-bottom">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2">
+                                        <div class="schedule-date">
+                                            <small class="text-muted d-block"><i class="bi bi-calendar3"></i> Date</small>
+                                            <strong class="text-primary">{{ schedule.Date if schedule.Date is string else schedule.Date.strftime('%Y-%m-%d') }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="schedule-subject">
+                                            <small class="text-muted d-block"><i class="bi bi-book"></i> Subject</small>
+                                            <strong>{{ schedule.Subject }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="schedule-time">
+                                            <small class="text-muted d-block"><i class="bi bi-clock"></i> Time</small>
+                                            <strong>{{ schedule.Start_time }} - {{ schedule.End_time }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="schedule-professor">
+                                            <small class="text-muted d-block"><i class="bi bi-person-fill"></i> Professor</small>
+                                            <strong>{{ schedule.Professor_name }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-info-circle"></i>
+                        {% if view_type == 'previous' %}
+                            No previous schedules found.
+                        {% elif view_type == 'upcoming' %}
+                            No upcoming schedules found.
+                        {% else %}
+                            No schedule for today.
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .schedule-item {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .schedule-item:hover {
+        background: #e7f3ff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .schedule-date, .schedule-subject, .schedule-time, .schedule-professor {
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+{% endblock %}

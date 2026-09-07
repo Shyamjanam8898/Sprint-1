@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="main-content" style="max-width:900px; margin:auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 class="mb-1">Batches — Class {{ Standard }} (Exams)</h3>
+        <p class="small-muted">Select a batch or view all students in this class</p>
+      </div>
+      <div>
+        <a href="{{ url_for('exam_batches') }}" class="btn btn-outline-secondary">&larr; Back to Classes</a>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      {# Use the Student-by-standard view that renders the same student cards as the home page #}
+      <a href="{{ url_for('students_by_standard', Standard=Standard) }}" class="btn btn-primary">
+        View All Students ({{ total }})
+      </a>
+      <a href="{{ url_for('exam_schedules', Standard=Standard) }}" class="btn btn-outline-secondary ms-2">View Exams</a>
+      {% if session.get('role') in ['admin','root'] %}
+        <a href="{{ url_for('add_exam') }}" class="btn btn-success ms-2">Add Exam</a>
+      {% endif %}
+    </div>
+
+    {% if batch_counts %}
+      <div class="list-group">
+        {% for b, cnt in batch_counts %}
+          <a href="{{ url_for('students_of_batch', Standard=Standard, batch_name=b.name) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+            <div>
+              <div class="fw-semibold">{{ b.name }}{% if b.Stream %} <small class="text-muted">({{ b.Stream }})</small>{% endif %}</div>
+              <div class="small text-muted">Standard: {{ b.Standard }}</div>
+            </div>
+            <span class="badge bg-secondary rounded-pill">{{ cnt }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">No batches configured for this class.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

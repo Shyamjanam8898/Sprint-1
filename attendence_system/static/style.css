@@ -1,0 +1,57 @@
+:root {
+  --page-bg: #f9fafb;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --text-dark: #111827;
+  --text-muted: #6b7280;
+  --primary-blue: #0360f6;
+  --primary-blue-soft: #dbeafe;
+}
+
+/* Role-based overrides: allow root/admin to switch the full site to card-bg tones */
+body.role-root, body.role-admin {
+  --page-bg: var(--card-bg);
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+}
+
+/* Apply the overrides to common elements (use !important to override inline styles) */
+body.role-root .page-container,
+body.role-admin .page-container {
+  background-color: var(--page-bg) !important;
+}
+
+body.role-root, body.role-admin { color: var(--text-dark) !important; }
+body.role-root .text-muted, body.role-admin .text-muted { color: var(--text-muted) !important; }
+
+body.role-root .dashboard-header, body.role-admin .dashboard-header,
+body.role-root .dashboard-header-student, body.role-admin .dashboard-header-student {
+  background-color: var(--card-bg) !important;
+  color: var(--text-dark) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+}
+
+body.role-root .list-group-item, body.role-admin .list-group-item,
+body.role-root .attendance-row, body.role-admin .attendance-row,
+body.role-root .card, body.role-admin .card {
+  background-color: var(--card-bg) !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+body.role-root .search-section input, body.role-admin .search-section input,
+body.role-root .form-control, body.role-admin .form-control {
+  background-color: var(--card-bg) !important;
+  color: var(--text-dark) !important;
+  border-color: var(--card-border) !important;
+}
+
+/* Ensure badges and small text are readable under role theme */
+body.role-root .badge, body.role-admin .badge { background-color: var(--primary-blue-soft) !important; color: var(--primary-blue) !important; }
+
+table {
+  --bs-table-bg-type: var(--page-bg);
+}
+.table {
+  --bs-table-bg-type: var(--page-bg);
+}

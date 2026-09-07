@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-3 text-center">
+      <img src="{{ url_for('static', filename='uploads/' + (admin.Photo if admin.Photo else 'placeholder.png')) }}" 
+           alt="{{ admin.Name }}" class="img-fluid rounded" style="max-width: 150px; height: auto;">
+    </div>
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Edit Admin — {{ admin.Name }}</h4>
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="name" class="form-control" value="{{ admin.Name }}" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control" value="{{ admin.Email }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              <input type="text" name="phone" class="form-control" value="{{ admin.Phone }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Photo</label>
+              <input type="file" name="photo" class="form-control" accept="image/*">
+              <small class="text-muted">Supported formats: PNG, JPG, JPEG, GIF</small>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" value="1" id="reset_password" name="reset_password">
+              <label class="form-check-label" for="reset_password">
+                Generate new password for this admin
+              </label>
+            </div>
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+            <a href="/root_dashboard" class="btn btn-secondary ms-2">Cancel</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="main-content">
+    <!-- Title and Stats Section -->
+    <div class="row mb-4">
+      <div class="col-md-12 d-flex justify-content-between align-items-center">
+        <div>
+          {% if current_standard %}
+            <h2 class="mb-3" style="color: #2c3e50; font-weight: 700;"><i class="bi bi-people-fill"></i> Students — Class {{ current_standard }}</h2>
+            <p class="text-muted">Showing students for class <strong>{{ current_standard }}</strong>: <span class="badge bg-primary" style="font-size: 1rem;">{{ students|length }}</span></p>
+          {% else %}
+            <h2 class="mb-3" style="color: #2c3e50; font-weight: 700;"><i class="bi bi-people-fill"></i> All Students</h2>
+            <p class="text-muted">Total Students: <span class="badge bg-primary" style="font-size: 1rem;">{{ students|length }}</span></p>
+          {% endif %}
+        </div>
+        <div>
+          {% if current_standard %}
+            <a href="{{ url_for('standard') }}" class="btn btn-outline-secondary">&larr; Back to Batches</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <form class="d-flex gap-2" role="search" action="/search" method="get" onsubmit="return false;">
+        <input id="studentSearch" class="form-control" type="search" placeholder="🔍 Search students by name..." name="q" style="flex: 1;" autocomplete="off">
+        <button class="btn btn-primary" type="button" id="searchBtn">
+          <i class="bi bi-search"></i> Search
+        </button>
+      </form>
+    </div>
+    <br>
+    <!-- Students List Section -->
+    <!-- Students List: full-width single-line items -->
+    <div class="row">
+      <div class="col-12">
+        {% if students %}
+        <div class="list-group">
+           {% for s in students %}
+           <a href="{{ url_for('student_detail', student_id=s.Student_id) }}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3"
+             data-name="{{ s.Student_name|lower }}" data-number="{{ s.Student_number }}" data-standard="{{ s.Standard|lower }}">
+            <div class="d-flex align-items-center">
+              <img src="{{ url_for('static', filename='uploads/' ~ (s.Student_photo if s.Student_photo and s.Student_photo|length > 0 else 'placeholder.png')) }}"
+                   alt="{{ s.Student_name }}" class="student-line-avatar me-3" onerror="this.onerror=null;this.src='{{ url_for('static', filename='uploads/placeholder.png') }}';">
+              <div>
+                <div class="fw-semibold text-dark">{{ s.Student_name }}</div>
+                <div class="text-muted small"><i class="bi bi-telephone-fill"></i><span class="ms-2">{{ s.Student_number }}</span></div>
+                <div class="text-muted small mt-1">Class: <strong>{{ s.Standard }}</strong></div>
+              </div>
+            </div>
+            <div class="admission-date text-muted small ms-3">{{ s.DOA }}</div>
+          </a>
+          {% endfor %}
+        </div>
+        <div id="noResults" class="alert alert-info mt-2" style="display:none;">
+          <i class="bi bi-exclamation-circle-fill me-2"></i>No students match your search.
+        </div>
+        {% else %}
+          <div class="alert alert-info d-flex align-items-center" role="alert">
+            <i class="bi bi-info-circle-fill me-3" style="font-size: 1.25rem;"></i>
+            <div>
+              <strong>No students found!</strong> Start by adding new students through the Admission section.
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ===== ONLY COLOR CHANGES – SIZE PRESERVED ===== */
+
+/* Student row (same size, new color) */
+.list-group-item {
+  background-color: #f9fbfd; /* very light blue */
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+  min-height: 110px;
+  box-shadow: 0 6px 18px rgba(47,79,127,0.08);
+}
+
+/* Hover – subtle blue highlight */
+.list-group-item:hover {
+  background-color: #eef4fb;
+}
+
+/* Student name – unchanged size */
+.list-group-item .fw-semibold {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #243c63;
+}
+
+/* Phone & class text */
+.list-group-item .text-muted.small {
+  font-size: 0.95rem;
+  color: #6b7280 !important;
+}
+
+/* Student image – SAME SIZE */
+.student-line-avatar {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: #eef2f7;
+  box-shadow: 0 4px 10px rgba(47,79,127,0.15);
+}
+
+/* Admission date */
+.admission-date {
+  min-width: 110px;
+  text-align: right;
+  color: #6b7280;
+}
+
+/* Badge – light blue (same size) */
+.badge.bg-primary {
+  background-color: #e6effa !important;
+  color: #3b6ea8 !important;
+  font-size: 1rem;
+}
+
+/* Search input */
+.search-section input {
+  background-color: #ffffff;
+  border: 1px solid #ffffff;
+}
+
+/* Search button – soft brown kept */
+.search-section button {
+  background-color: #0360f6 ;
+  color: white;
+  border: none;
+}
+
+.search-section button:hover {
+  background-color: var(--primary-blue);
+}
+
+/* Alerts */
+.alert-info {
+  background-color: #e6effa;
+  border-color: #dbe3ee;
+  color: #243c63;
+}
+
+/* Responsive – SAME sizing as before */
+@media (max-width: 768px) {
+  .student-line-avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .list-group-item {
+    min-height: 90px;
+  }
+
+  .admission-date {
+    min-width: 70px;
+    font-size: 0.85rem;
+  }
+}
+</style>
+
+
+<script>
+// Server-side live search via AJAX (debounced)
+(function() {
+  const input = document.getElementById('studentSearch');
+  const btn = document.getElementById('searchBtn');
+  const listGroup = document.querySelector('.list-group');
+  const noResults = document.getElementById('noResults');
+  let debounceTimer = null;
+
+  function escapeHtml(str) {
+    if (!str && str !== 0) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderStudents(students) {
+    if (!listGroup) return;
+    if (!students || students.length === 0) {
+      listGroup.innerHTML = '';
+      if (noResults) noResults.style.display = 'block';
+      return;
+    }
+    if (noResults) noResults.style.display = 'none';
+
+    const html = students.map(s => {
+      const photo = escapeHtml(s.photo_url || ('/static/uploads/placeholder.png'));
+      const name = escapeHtml(s.Student_name || '');
+      const number = escapeHtml(s.Student_number || '');
+      const standard = escapeHtml(s.Standard || '');
+      const doa = escapeHtml(s.DOA || '');
+      const sid = encodeURIComponent(s.Student_id || s.Sr_no);
+      return `
+        <a href="/student_detail/${sid}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between py-3">
+          <div class="d-flex align-items-center">
+            <img src="${photo}" alt="${name}" class="student-line-avatar me-3">
+            <div>
+              <div class="fw-semibold text-dark">${name}</div>
+              <div class="text-muted small"><i class="bi bi-telephone-fill"></i><span class="ms-2">${number}</span></div>
+              <div class="text-muted small mt-1">Class: <strong>${standard}</strong></div>
+            </div>
+          </div>
+          <div class="admission-date text-muted small ms-3">${doa}</div>
+        </a>`;
+    }).join('\n');
+
+    listGroup.innerHTML = html;
+  }
+
+  function fetchSearch(q) {
+    const url = '/api/search_students?q=' + encodeURIComponent(q || '');
+    fetch(url, { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        renderStudents(data.students || []);
+      })
+      .catch(err => {
+        console.error('Search error', err);
+      });
+  }
+
+  function onInput() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => fetchSearch(input.value.trim()), 300);
+  }
+
+  // pass current standard from server to JS (empty if not viewing a class)
+  const currentStandard = "{{ current_standard|default('', true) }}";
+
+  if (input) {
+    input.addEventListener('input', onInput);
+    if (btn) btn.addEventListener('click', () => fetchSearch(input.value.trim()));
+    // Only perform the unconditional initial fetch on the global home page.
+    // When viewing a specific class (currentStandard set), keep the server-rendered list
+    // and let searches be scoped to that class via the `standard` param.
+    if (!currentStandard) {
+      fetchSearch('');
+    }
+  }
+
+  function fetchSearch(q) {
+    let url = '/api/search_students?q=' + encodeURIComponent(q || '');
+    if (currentStandard) {
+      url += '&standard=' + encodeURIComponent(currentStandard);
+    }
+    fetch(url, { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        renderStudents(data.students || []);
+      })
+      .catch(err => {
+        console.error('Search error', err);
+      });
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% if show_popup %}
+<script>
+  alert('Attendance submitted successfully!');
+  window.location.href = '{{ url_for("show_schedule", Standard=Standard) }}';
+</script>
+{% endif %}
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h3 class="mb-0">Attendance — {{ schedule.Subject }} ({{ schedule.Professor_name }})</h3>
+        <div class="small text-muted">Class: <strong>{{ Standard }}</strong> &middot; Date: {{ schedule.Date }} &middot; {{ schedule.Start_time }} - {{ schedule.End_time }}</div>
+      </div>
+      <div>
+        <a href="{{ url_for('show_schedule', Standard=Standard) }}" class="btn btn-outline-secondary">&larr; Back to Schedules</a>
+      </div>
+    </div>
+
+    {% if date_info %}
+      {% if date_info.is_future %}
+        <div class="alert alert-danger mb-3">
+          <strong>Future Date</strong>: This schedule is for a future date ({{ date_info.schedule_date }}). Attendance cannot be marked for future dates. Only past or today's attendance can be marked or edited.
+        </div>
+      {% elif date_info.is_past %}
+        <div class="alert alert-warning mb-3">
+          <strong>Past Date</strong>: This schedule is for a past date ({{ date_info.schedule_date }}). You can only edit existing attendance records, not mark new ones.
+        </div>
+      {% elif date_info.is_today %}
+        <div class="alert alert-info mb-3">
+          <strong>Today's Schedule</strong>: You can mark or edit attendance for today.
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <form method="POST" {% if date_info.is_future %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width:120px">ID</th>
+              <th>Name</th>
+              <th style="width:360px">Attendance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in Students %}
+            <tr>
+              <td style="width:96px;">
+                <img src="{{ url_for('static', filename='uploads/' ~ (student.Student_photo if student.Student_photo and student.Student_photo|length > 0 else 'placeholder.png')) }}" alt="{{ student.Student_name }}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;">
+              </td>
+              <td>
+                <div class="fw-semibold">{{ student.Student_name }}</div>
+                <div class="text-muted small">ID: {{ student.Student_id }} &middot; {{ student.Student_number }}</div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="btn-group me-3" role="group">
+                    <input type="radio" class="btn-check" name="attendance_{{ student.Student_id }}" id="present_{{ student.Student_id }}" value="Present" autocomplete="off" {% if prefill.get(student.Student_id) and prefill[student.Student_id].Status == 'Present' %}checked{% endif %} {% if date_info.is_past and not prefill.get(student.Student_id) %}disabled{% endif %} {% if read_only %}disabled{% endif %}>
+                    <label class="btn btn-outline-success" for="present_{{ student.Student_id }}">Present</label>
+
+                    <input type="radio" class="btn-check" name="attendance_{{ student.Student_id }}" id="absent_{{ student.Student_id }}" value="Absent" autocomplete="off" {% if prefill.get(student.Student_id) and prefill[student.Student_id].Status == 'Absent' %}checked{% endif %} {% if date_info.is_past and not prefill.get(student.Student_id) %}disabled{% endif %} {% if read_only %}disabled{% endif %}>
+                    <label class="btn btn-outline-danger" for="absent_{{ student.Student_id }}">Absent</label>
+                  </div>
+                  <input type="text" class="form-control" style="max-width:280px;" name="reason_{{ student.Student_id }}" placeholder="Reason for absence" value="{% if prefill.get(student.Student_id) %}{{ prefill[student.Student_id].Remark }}{% endif %}" {% if date_info.is_past and not prefill.get(student.Student_id) %}disabled{% endif %} {% if read_only %}disabled{% endif %}>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if not read_only %}
+      <div class="mt-3">
+        <button type="button" class="btn btn-success" id="submitAttendanceBtn" {% if date_info.is_future %}disabled{% endif %}>Submit Attendance for Schedule</button>
+      </div>
+      {% endif %}
+    </form>
+    <script>
+      document.getElementById('submitAttendanceBtn').addEventListener('click', function(){
+        // Validate all students have attendance marked
+        const form = this.closest('form');
+        const allInputs = form.querySelectorAll('input[type="radio"][name^="attendance_"]');
+        const studentIds = new Set();
+        
+        // Get unique student IDs
+        allInputs.forEach(input => {
+          const match = input.name.match(/attendance_(.+)/);
+          if (match) studentIds.add(match[1]);
+        });
+        
+        // Check if all students have a selection
+        let allMarked = true;
+        for (const studentId of studentIds) {
+          const checked = form.querySelector(`input[type="radio"][name="attendance_${studentId}"]:checked`);
+          if (!checked) {
+            allMarked = false;
+            break;
+          }
+        }
+        
+        if (!allMarked) {
+          alert('Please mark attendance (Present/Absent) for all students before submitting.');
+          return;
+        }
+        
+        if (confirm('Are you sure you want to save/overwrite attendance for this schedule?')) {
+          form.submit();
+        }
+      });
+    </script>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-3 text-center">
+      <img src="{{ url_for('static', filename='uploads/' + (parameters.get('root_photo','placeholder.png'))) }}" 
+           alt="Root" class="img-fluid rounded" style="max-width: 200px; height: auto;">
+    </div>
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Root Profile</h4>
+          <dl class="row">
+            <dt class="col-sm-3">Name</dt><dd class="col-sm-9">{{ parameters.get('Admin_user') or 'Root' }}</dd>
+            <dt class="col-sm-3">Username</dt><dd class="col-sm-9">{{ parameters.get('Admin_user') }}</dd>
+            <dt class="col-sm-3">Email</dt><dd class="col-sm-9">{{ parameters.get('Admin_email','N/A') }}</dd>
+            <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">{{ parameters.get('Admin_phone','N/A') }}</dd>
+            <dt class="col-sm-3">Role</dt><dd class="col-sm-9">root</dd>
+            <dt class="col-sm-3">Date Created</dt><dd class="col-sm-9">{{ parameters.get('Admin_created_at','N/A') }}</dd>
+            <dt class="col-sm-3">Last Login</dt><dd class="col-sm-9">{{ last_login.strftime('%d %b %Y, %I:%M %p') if last_login else 'N/A' }}</dd>
+          </dl>
+
+          <hr>
+          <h5>System Stats</h5>
+          <dl class="row">
+            <dt class="col-sm-3">Total Admins</dt><dd class="col-sm-9"><span id="total_admins">{{ total_admins }}</span></dd>
+            <dt class="col-sm-3">Total Students</dt><dd class="col-sm-9"><span id="total_students">{{ total_students }}</span></dd>
+          </dl>
+
+          <script>
+            // Poll system stats endpoint to keep counts fresh
+            async function refreshStats(){
+              try{
+                const res = await fetch('/api/system_stats');
+                if(!res.ok) return;
+                const j = await res.json();
+                document.getElementById('total_admins').textContent = j.total_admins;
+                document.getElementById('total_students').textContent = j.total_students;
+              }catch(e){
+                // ignore network errors
+              }
+            }
+            // refresh on load and every 30s
+            refreshStats();
+            setInterval(refreshStats, 30000);
+          </script>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

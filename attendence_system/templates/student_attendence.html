@@ -1,0 +1,65 @@
+{% extends "layout_student.html" %}
+
+{% block body %}
+<!-- Attendance Records Section -->
+<div class="row mt-4" style="background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 20px; border-radius: 12px;">
+    <div class="col-md-12">
+        <h2 class="mb-1" style="color: white;"><i class="bi bi-journal-check"></i> Attendance Records</h2> 
+        <p style="color: rgba(255,255,255,0.9);">{{ student.Student_name }} | {{ student.Standard }} | Student ID: {{ student.Student_id }}
+            | Showing attendance from <strong>{{ attendance_start or 'N/A' }}</strong> to <strong>{{ attendance_end or 'N/A' }}</strong>
+        </p>
+        </div>
+</div>
+
+  <div class="col-md-12" >
+    <div class="card shadow-lg">
+                <div class="card-body">
+                    {% if attendance_records %}
+                        {% set present_count = attendance_records | selectattr('Status','equalto','Present') | list | length %}
+                        {% set absent_count = attendance_records | selectattr('Status','equalto','Absent') | list | length %}
+                        <div class="mb-3">
+                            <span class="badge bg-success me-2">Present: {{ present_count }}</span>
+                            <span class="badge bg-danger">Absent: {{ absent_count }}</span>
+                        </div>
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Class</th>
+                                    <th>Subject</th>
+                                    <th>Professor</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                    <th>Remark</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in attendance_records %}
+                                <tr>
+                                    <td>{{ record.Date }}</td>
+                                    <td>{{ record.Class }}</td>
+                                    <td>{{ record.Subject }}</td>
+                                    <td>{{ record.Professor_name }}</td>
+                                    <td>{{ record.Start_time }}</td>
+                                    <td>{{ record.End_time }}</td>
+                                    <td>
+                                        {% if record.Status == 'Present' %}
+                                            <span class="badge bg-success">{{ record.Status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ record.Status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.Remark }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted">No attendance records found for this student.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

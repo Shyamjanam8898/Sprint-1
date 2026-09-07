@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="mb-4" style="background: linear-gradient(90deg, #154185, #243c63); color: white; padding: 20px; border-radius: 12px;">
+    <h3 style="color: white;"><i class="bi bi-check-circle"></i> Confirm Promotions</h3>
+    <p style="color: rgba(255,255,255,0.9);">Review selected students and confirm promotion.</p>
+  </div>
+  <div class="main-content" style="max-width:900px; margin:auto;">
+
+    {% if students and students|length > 0 %}
+      <form method="POST" action="{% if is_batch_promotion %}/promote_batch{% else %}/promote{% endif %}">
+        <input type="hidden" name="confirm" value="1">
+        {% if is_batch_promotion %}<input type="hidden" name="batch_id" value="{{ batch_id }}">{% endif %}
+        <table class="table table-sm">
+          <thead>
+            <tr><th>Student Name</th><th>Student ID</th><th>From</th><th>To</th></tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+            <tr>
+              <td>{{ s.Student_name }}</td>
+              <td>{{ s.Student_id }}</td>
+              <td>{{ s.Standard }}</td>
+              <td>{{ next_map.get(s.Standard, 'N/A') }}</td>
+            </tr>
+            <input type="hidden" name="promote_ids" value="{{ s.Student_id }}">
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-danger" name="action" value="confirm" type="submit">Confirm Promotion</button>
+          <button class="btn btn-outline-secondary" name="action" value="export" type="submit">Download CSV</button>
+          <a href="{% if is_batch_promotion %}/class{% else %}/promote{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    {% else %}
+      <div class="alert alert-info">No students selected.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

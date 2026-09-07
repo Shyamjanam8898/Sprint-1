@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="container-fluid" style="max-width:1200px; margin:auto; padding:20px;">
+
+    <div class="mb-4">
+        <a href="{{ url_for('admin_performance') }}" class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Performance Overview
+        </a>
+        <h2 class="mb-1"><i class="bi bi-bar-chart"></i> Class {{ standard }} - Performance</h2>
+        <p class="text-muted">All students ranked by performance</p>
+    </div>
+
+    <!-- Class Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Total Students</h6>
+                    <h3 class="mb-0">{{ total_students }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Avg Performance</h6>
+                    <h3 class="mb-0">
+                        {% set avg = namespace(sum=0, count=0) %}
+                        {% for perf in student_performance_data %}
+                            {% set avg.sum = avg.sum + perf.avg_marks %}
+                            {% set avg.count = avg.count + 1 %}
+                        {% endfor %}
+                        {% if avg.count > 0 %}
+                            {{ (avg.sum / avg.count)|round(2) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Exams Conducted</h6>
+                    <h3 class="mb-0">
+                        {% if student_performance_data|length > 0 %}
+                            {{ student_performance_data[0].exam_count }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Performance Table -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-page">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Student Rankings</h5>
+                </div>
+                <div class="card-body">
+                    {% if student_performance_data|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:8%;"><i class="bi bi-hash"></i> Rank</th>
+                                        <th style="width:35%;"><i class="bi bi-person"></i> Student Name</th>
+                                        <th style="width:15%;"><i class="bi bi-book"></i> Exams</th>
+                                        <th style="width:15%;"><i class="bi bi-percent"></i> Avg %</th>
+                                        <th style="width:15%;"><i class="bi bi-star"></i> Total</th>
+                                        <th style="width:12%;"><i class="bi bi-arrow-right"></i> Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for perf in student_performance_data %}
+                                        <tr>
+                                            <td>
+                                                <strong>
+                                                    {{ perf.rank }}
+                                                    {% if perf.rank == 1 %}
+                                                        <span>🥇</span>
+                                                    {% elif perf.rank == 2 %}
+                                                        <span>🥈</span>
+                                                    {% elif perf.rank == 3 %}
+                                                        <span>🥉</span>
+                                                    {% endif %}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <strong>{{ perf.student.Student_name }}</strong><br>
+                                                <small class="text-muted">{{ perf.student.Student_id }}</small>
+                                            </td>
+                                            <td>{{ perf.exam_count }}</td>
+                                            <td>
+                                                <span class="badge" style="background-color: {% if perf.avg_marks >= 80 %}#28a745{% elif perf.avg_marks >= 60 %}#ffc107{% else %}#dc3545{% endif %};">
+                                                    {{ perf.avg_marks }}%
+                                                </span>
+                                            </td>
+                                            <td>{{ perf.total_obtained }}</td>
+                                            <td>
+                                                <a href="{{ url_for('admin_student_performance', student_id=perf.student.Student_id) }}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No student performance data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
